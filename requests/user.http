@@ -3,8 +3,18 @@ Content-Type: application/json
 
 {
     "name": "Kiril",
-    "email": "kiril@gmail.com",
-    "password": "qwerty228"
+    "email": "kirdwSfeil228@gmail.com",
+    "password": "qwert"
 }
 
 ###
+DELETE http://localhost:5000/users/3
+
+### Login user
+POST http://localhost:5000/users/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "ivan.petrenko@example.com",
+  "password": "placeholder_hash_1"
+}
