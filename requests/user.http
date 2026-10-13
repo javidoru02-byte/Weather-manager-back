@@ -1,20 +1,53 @@
+### реєстрація
 POST http://localhost:5000/users HTTP/1.1
 Content-Type: application/json
 
 {
-    "name": "Kiril",
-    "email": "kirdwSfeil228@gmail.com",
-    "password": "qwert"
+  "name": "Artem",
+  "email": "artem@gmail.com",
+  "password": "qwerty123"
 }
 
-###
-DELETE http://localhost:5000/users/3
-
-### Login user
+### логін
 POST http://localhost:5000/users/login HTTP/1.1
 Content-Type: application/json
 
 {
-  "email": "ivan.petrenko@example.com",
-  "password": "placeholder_hash_1"
+  "email": "artem@gmail.com",
+  "password": "qwerty123"
 }
+
+### get
+GET http://localhost:5000/users/21 HTTP/1.1
+
+### update
+PATCH http://localhost:5000/users/21 HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Artem update",
+  "email": "artem@gmail.com"
+}
+
+### change pass
+PATCH http://localhost:5000/users/21/password HTTP/1.1
+Content-Type: application/json
+
+{
+  "currentPassword": "qwerty123",
+  "newPassword": "qwerty111"
+}
+
+### google auth
+POST http://localhost:5000/users/google-login HTTP/1.1
+Content-Type: application/json
+
+{
+  "credential": "eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk0M2EzYTVkN2Q5MTk2MjVhNDU0ZTQ4OWI3NWMyOWFkYWI1N2FjYmEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIzODIzMDg5OTQ3MTItOTZlZ2xjN3FkdWZsdnNhc3N2Y2dsMTllNWFkam8ybDYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiIzODIzMDg5OTQ3MTItOTZlZ2xjN3FkdWZsdnNhc3N2Y2dsMTllNWFkam8ybDYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDM5MDk4Mjk0NzA0MTI2MjExODEiLCJlbWFpbCI6ImtpcmlsMDMwMnVhQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoiX3FRSkdwaE5IYkpBTEtTSkJ6a0xjUSIsIm5hbWUiOiLQmtGW0YDRltC7INCR0YDQuNGH0LrQvtCy0YHRjNC60LjQuSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NKbkNXcEx6NXd0ekVPa1BBX3RYekNmUmF1TUxYcGtVd1dCUlctSTZVN0FRYUNOU0E9czk2LWMiLCJnaXZlbl9uYW1lIjoi0JrRltGA0ZbQuyIsImZhbWlseV9uYW1lIjoi0JHRgNC40YfQutC-0LLRgdGM0LrQuNC5IiwiaWF0IjoxNzkxOTA4MTY3LCJleHAiOjE3OTE5MTE3Njd9.illhGtb93Qjng68PBMLJ395pj_zDthnfFfT7wrsyNZBR3mE47JDHNGbjKfKRqlYRmQhu-x0jlyYlXEtGgmDtb1-0OZntt-TdZf0h8jPQ06OhOD51377vxkqtf8Vmh_DlWNwvfzgWw4ny0775HP-B_6tshmXGPX8OxC1gGlChV1i-VqcONqkY0lsjsWkNzcydyNeaU_ekjgObwAwcUfhhXI6QM70SejXYsLO1V5SzQ2Zgy0RSpmuqeE4vfuvA0kKw4q0J9Y667tdOWxKSr8a7kfMjnmhrtmboXuQYSTZMz1JJvEWoF1oACPROQcTl8U-aRpRDzZggv7V6rwH76vXesw"
+}
+
+### delete
+DELETE http://localhost:5000/users/22 HTTP/1.1
+
+
+

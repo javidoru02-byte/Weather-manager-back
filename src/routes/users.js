@@ -1,17 +1,28 @@
 const { Router } = require('express');
-const userContoller = require('../controllers/user');
+const userController = require('../controllers/user');
 const { validate } = require('../middlewares/validate');
-const registerValidation = require('../validation/user');
+const {
+  registerSchema,
+  loginSchema,
+  changePasswordSchema,
+} = require('../validation/user');
 
 const router = new Router();
 
-router
-  .route('/users')
-  .post(validate(registerValidation), userContoller.register);
+router.post('/users', validate(registerSchema), userController.register);
+router.post('/users/login', validate(loginSchema), userController.login);
+router.post('/users/google-login', userController.googleLogin);
+
 router
   .route('/users/:id')
-  .delete(userContoller.deleteUser);
-router
-  .route('/users/login')
-  .post(userContoller.login);
+  .get(userController.getMe)
+  .patch(userController.updateUser)
+  .delete(userController.deleteUser);
+
+router.patch(
+  '/users/:id/password',
+  validate(changePasswordSchema),
+  userController.changePassword,
+);
+
 module.exports = router;
