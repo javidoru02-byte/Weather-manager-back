@@ -2,14 +2,15 @@
 -- PostgreSQL database dump
 --
 
-\restrict fishW5T9g27dIW5of0FpAf5y8LoWES9AwbQyRFfV8t3K5n0dqsoQjBmP00VjFkZ
+\restrict hER8tutP4JczluZoh1TvaQfXRquMVQNV0b6XaRZTS7P64fOtDoZjesdFaVUYJIw
 
--- Dumped from database version 16.15 (Ubuntu 16.15-1.pgdg26.04+2)
--- Dumped by pg_dump version 16.15 (Ubuntu 16.15-1.pgdg26.04+2)
+-- Dumped from database version 18.6 (Ubuntu 18.6-1.pgdg24.04+2)
+-- Dumped by pg_dump version 18.6 (Ubuntu 18.6-1.pgdg24.04+2)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -45,7 +46,7 @@ ALTER TABLE public.favourite_weather OWNER TO postgres;
 CREATE TABLE public.users (
     id integer NOT NULL,
     email character varying(255) NOT NULL,
-    password character varying(255) NOT NULL,
+    password character varying(255),
     name character varying(255) NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -108,7 +109,7 @@ COPY public.users (id, email, password, name, created_at) FROM stdin;
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 2, true);
+SELECT pg_catalog.setval('public.users_id_seq', 22, true);
 
 
 --
@@ -154,5 +155,5 @@ ALTER TABLE ONLY public.favourite_weather
 -- PostgreSQL database dump complete
 --
 
-\unrestrict fishW5T9g27dIW5of0FpAf5y8LoWES9AwbQyRFfV8t3K5n0dqsoQjBmP00VjFkZ
+\unrestrict hER8tutP4JczluZoh1TvaQfXRquMVQNV0b6XaRZTS7P64fOtDoZjesdFaVUYJIw
 
