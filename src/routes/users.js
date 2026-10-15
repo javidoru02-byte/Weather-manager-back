@@ -6,6 +6,7 @@ const {
   loginSchema,
   changePasswordSchema,
 } = require('../validation/user');
+const favouritesRouter = require('./favourites');
 
 const router = new Router();
 
@@ -24,5 +25,7 @@ router.patch(
   validate(changePasswordSchema),
   userController.changePassword,
 );
+
+router.use('/users/:userId/favourites', favouritesRouter);
 
 module.exports = router;
