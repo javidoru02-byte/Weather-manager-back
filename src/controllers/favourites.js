@@ -2,7 +2,7 @@ const pool = require('../db');
 
 async function getFavourites(req, res, next) {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
 
     const { rows } = await pool.query(
       `SELECT user_id, city_id, name, lat, lon, created_at
@@ -20,7 +20,7 @@ async function getFavourites(req, res, next) {
 
 async function addFavourite(req, res, next) {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
     const { cityId, name, lat, lon } = req.body;
 
     const { rows } = await pool.query(
@@ -38,7 +38,8 @@ async function addFavourite(req, res, next) {
 
 async function deleteFavourite(req, res, next) {
   try {
-    const { userId, cityId } = req.params;
+    const userId = req.user.id;
+    const { cityId } = req.params;
 
     const { rowCount } = await pool.query(
       `DELETE FROM favourite_weather WHERE user_id = $1 AND city_id = $2`,
@@ -55,8 +56,4 @@ async function deleteFavourite(req, res, next) {
   }
 }
 
-module.exports = {
-  getFavourites,
-  addFavourite,
-  deleteFavourite,
-};
+module.exports = { getFavourites, addFavourite, deleteFavourite };

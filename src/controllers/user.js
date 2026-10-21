@@ -1,10 +1,8 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { OAuth2Client } = require('google-auth-library');
 const db = require('../db');
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 class UserController {
   async register(req, res, next) {
@@ -18,19 +16,6 @@ class UserController {
         [name, email, hashedPassword],
       );
       res.status(201).json(newUser.rows[0]);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async deleteUser(req, res, next) {
-    try {
-      const { id } = req.params;
-      const deletedUser = await db.query(
-        `DELETE FROM users WHERE id = $1 RETURNING id`,
-        [id],
-      );
-      res.status(200).json(deletedUser.rows[0]);
     } catch (error) {
       next(error);
     }
@@ -55,8 +40,24 @@ class UserController {
       }
 
       const { password: userPassword, ...userData } = user.rows[0];
+      const token = jwt.sign({ id: userData.id }, JWT_SECRET, {
+        expiresIn: '7d',
+      });
 
-      res.status(200).json(userData);
+      res.status(200).json({ user: userData, token });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMe(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const user = await db.query(
+        `SELECT id, name, email FROM users WHERE id = $1`,
+        [userId],
+      );
+      res.status(200).json(user.rows[0]);
     } catch (error) {
       next(error);
     }
@@ -64,7 +65,7 @@ class UserController {
 
   async updateUser(req, res, next) {
     try {
-      const { id } = req.params;
+      const userId = req.user.id;
       const { name, email } = req.body;
 
       const updatedUser = await db.query(
@@ -72,7 +73,7 @@ class UserController {
         SET name = $1, email = $2
         WHERE id = $3
         RETURNING id, name, email`,
-        [name, email, id],
+        [name, email, userId],
       );
 
       res.status(200).json(updatedUser.rows[0]);
@@ -81,15 +82,14 @@ class UserController {
     }
   }
 
-  async getMe(req, res, next) {
+  async deleteUser(req, res, next) {
     try {
-      const { id } = req.params;
-      const user = await db.query(
-        `SELECT id, name, email FROM users WHERE id = $1`,
-        [id],
+      const userId = req.user.id;
+      const deletedUser = await db.query(
+        `DELETE FROM users WHERE id = $1 RETURNING id`,
+        [userId],
       );
-
-      res.status(200).json(user.rows[0]);
+      res.status(200).json(deletedUser.rows[0]);
     } catch (error) {
       next(error);
     }
@@ -97,12 +97,12 @@ class UserController {
 
   async changePassword(req, res, next) {
     try {
-      const { id } = req.params;
+      const userId = req.user.id;
       const { currentPassword, newPassword } = req.body;
 
       const result = await db.query(
         `SELECT password FROM users WHERE id = $1`,
-        [id],
+        [userId],
       );
       const user = result.rows[0];
 
@@ -119,46 +119,10 @@ class UserController {
       const hashedNewPassword = await bcrypt.hash(String(newPassword), 10);
       await db.query(`UPDATE users SET password = $1 WHERE id = $2`, [
         hashedNewPassword,
-        id,
+        userId,
       ]);
 
       res.status(200).json({ success: true });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async googleLogin(req, res, next) {
-    try {
-      const { credential } = req.body;
-
-      const ticket = await googleClient.verifyIdToken({
-        idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID,
-      });
-
-      const { email, name } = ticket.getPayload();
-      const cleanEmail = email.trim().toLowerCase();
-
-      let result = await db.query(`SELECT * FROM users WHERE email = $1`, [
-        cleanEmail,
-      ]);
-      let user = result.rows[0];
-
-      if (!user) {
-        const newUser = await db.query(
-          `INSERT INTO users (name, email, created_at)
-           VALUES ($1, $2, NOW())
-           RETURNING id, name, email`,
-          [name, cleanEmail],
-        );
-        user = newUser.rows[0];
-      }
-
-      const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
-      const { password: _, ...safeUser } = user;
-
-      res.status(200).json({ user: safeUser, token });
     } catch (error) {
       next(error);
     }
