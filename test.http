@@ -19,7 +19,7 @@ Content-Type: application/json
 
 ### Get favourites (замінити TOKEN на реальний з відповіді логіну)
 GET http://localhost:5000/favourites
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzkyNjE3MDYwLCJleHAiOjE3OTMyMjE4NjB9.gMZx8J4As-TrUiqoDxg3LxwEL2FJrNK4j5setMKn4mY
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjMsImlhdCI6MTc5Mjg2MjEzMSwiZXhwIjoxNzkzNDY2OTMxfQ.YkZCO2CB8sj7MYDTu8a5MLVQxd4nl_wSQIwu0rlH_f8
 
 ### Add favourite
 POST http://localhost:5000/favourites
