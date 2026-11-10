@@ -1,0 +1,51 @@
+### Реєстрація — помилка валідації
+POST http://localhost:5000/api/users/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "K",
+  "email": "invalid-email",
+  "password": "123"
+}
+
+### Реєстрація — користувач з таким email вже існує
+POST http://localhost:5000/api/users/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Kiril",
+  "email": "kiril@example.com",
+  "password": "secretpassword123"
+}
+
+### Логін — неправильний пароль
+POST http://localhost:5000/api/users/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "kiril@example.com",
+  "password": "wrongpassword"
+}
+
+### Оновлення користувача — не знайдено
+PATCH http://localhost:5000/api/users/999999 HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Nobody",
+  "email": "nobody@example.com"
+}
+
+### Додавання міста — невалідні координати
+POST http://localhost:5000/api/favourites/1 HTTP/1.1
+Content-Type: application/json
+
+{
+  "cityId": 12345,
+  "name": "Broken Coordinates City",
+  "lat": 150.0,
+  "lon": -200.0
+}
+
+### Видалення міста — не знайдено в улюблених
+DELETE http://localhost:5000/api/favourites/1/999999 HTTP/1.1

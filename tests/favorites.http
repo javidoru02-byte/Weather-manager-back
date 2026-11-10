@@ -1,0 +1,16 @@
+### Отримати список улюблених міст
+GET http://localhost:5000/api/favourites/1 HTTP/1.1
+
+### Додати місто в улюблені
+POST http://localhost:5000/api/favourites/1 HTTP/1.1
+Content-Type: application/json
+
+{
+  "cityId": 2026,
+  "name": "Zhytomyr TEST",
+  "lat": 50,
+  "lon": 50
+}
+
+### Видалити місто з улюблених
+DELETE http://localhost:5000/api/favourites/1/2026 HTTP/1.1
