@@ -1,21 +1,27 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const db = require('../db');
+const { signToken } = require('../utils/jwt');
+const httpError = require('../utils/httpError');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const SALT_ROUNDS = 10;
+const PUBLIC_FIELDS = 'id, name, email, created_at AS "createdAt"';
 
 class UserController {
   async register(req, res, next) {
     try {
       const { name, email, password } = req.body;
-      const hashedPassword = await bcrypt.hash(String(password), 10);
-      const newUser = await db.query(
-        `INSERT INTO users (name, email, password, created_at)
-            VALUES ($1, $2, $3, NOW())
-            RETURNING id, name, email`,
+      const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+      const { rows } = await db.query(
+        `INSERT INTO users (name, email, password)
+         VALUES ($1, $2, $3)
+         RETURNING ${PUBLIC_FIELDS}`,
         [name, email, hashedPassword],
       );
-      res.status(201).json(newUser.rows[0]);
+      const user = rows[0];
+
+      
+      res.status(201).json({ user, token: signToken(user.id) });
     } catch (error) {
       next(error);
     }
@@ -25,26 +31,21 @@ class UserController {
     try {
       const { email, password } = req.body;
 
-      const user = await db.query(`SELECT * FROM users WHERE email = $1`, [
-        email,
-      ]);
+      const { rows } = await db.query(
+        `SELECT ${PUBLIC_FIELDS}, password FROM users WHERE email = $1`,
+        [email],
+      );
+      const found = rows[0];
 
       const isValid =
-        user.rows[0] &&
-        (await bcrypt.compare(String(password), user.rows[0].password));
+        found?.password && (await bcrypt.compare(password, found.password));
 
       if (!isValid) {
-        const err = new Error('Invalid email or password');
-        err.status = 401;
-        return next(err);
+        return next(httpError(401, 'invalidCredentials'));
       }
 
-      const { password: userPassword, ...userData } = user.rows[0];
-      const token = jwt.sign({ id: userData.id }, JWT_SECRET, {
-        expiresIn: '7d',
-      });
-
-      res.status(200).json({ user: userData, token });
+      const { password: _password, ...user } = found;
+      res.status(200).json({ user, token: signToken(user.id) });
     } catch (error) {
       next(error);
     }
@@ -52,12 +53,16 @@ class UserController {
 
   async getMe(req, res, next) {
     try {
-      const userId = req.user.id;
-      const user = await db.query(
-        `SELECT id, name, email FROM users WHERE id = $1`,
-        [userId],
+      const { rows } = await db.query(
+        `SELECT ${PUBLIC_FIELDS} FROM users WHERE id = $1`,
+        [req.user.id],
       );
-      res.status(200).json(user.rows[0]);
+
+      if (!rows[0]) {
+        return next(httpError(404, 'userNotFound'));
+      }
+
+      res.status(200).json(rows[0]);
     } catch (error) {
       next(error);
     }
@@ -65,18 +70,23 @@ class UserController {
 
   async updateUser(req, res, next) {
     try {
-      const userId = req.user.id;
       const { name, email } = req.body;
 
-      const updatedUser = await db.query(
+      
+      const { rows } = await db.query(
         `UPDATE users
-        SET name = $1, email = $2
-        WHERE id = $3
-        RETURNING id, name, email`,
-        [name, email, userId],
+         SET name = COALESCE($1, name),
+             email = COALESCE($2, email)
+         WHERE id = $3
+         RETURNING ${PUBLIC_FIELDS}`,
+        [name ?? null, email ?? null, req.user.id],
       );
 
-      res.status(200).json(updatedUser.rows[0]);
+      if (!rows[0]) {
+        return next(httpError(404, 'userNotFound'));
+      }
+
+      res.status(200).json(rows[0]);
     } catch (error) {
       next(error);
     }
@@ -84,12 +94,16 @@ class UserController {
 
   async deleteUser(req, res, next) {
     try {
-      const userId = req.user.id;
-      const deletedUser = await db.query(
-        `DELETE FROM users WHERE id = $1 RETURNING id`,
-        [userId],
-      );
-      res.status(200).json(deletedUser.rows[0]);
+      
+      const { rowCount } = await db.query(`DELETE FROM users WHERE id = $1`, [
+        req.user.id,
+      ]);
+
+      if (rowCount === 0) {
+        return next(httpError(404, 'userNotFound'));
+      }
+
+      res.status(204).send();
     } catch (error) {
       next(error);
     }
@@ -97,32 +111,32 @@ class UserController {
 
   async changePassword(req, res, next) {
     try {
-      const userId = req.user.id;
       const { currentPassword, newPassword } = req.body;
 
-      const result = await db.query(
+      const { rows } = await db.query(
         `SELECT password FROM users WHERE id = $1`,
-        [userId],
+        [req.user.id],
       );
-      const user = result.rows[0];
+      const user = rows[0];
 
-      if (
-        !user ||
-        !user.password ||
-        !(await bcrypt.compare(String(currentPassword), user.password))
-      ) {
-        const err = new Error('wrongCurrentPassword');
-        err.status = 400;
-        return next(err);
+      if (!user) {
+        return next(httpError(404, 'userNotFound'));
       }
 
-      const hashedNewPassword = await bcrypt.hash(String(newPassword), 10);
+      const isValid =
+        user.password && (await bcrypt.compare(currentPassword, user.password));
+
+      if (!isValid) {
+        return next(httpError(400, 'wrongCurrentPassword'));
+      }
+
+      const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
       await db.query(`UPDATE users SET password = $1 WHERE id = $2`, [
         hashedNewPassword,
-        userId,
+        req.user.id,
       ]);
 
-      res.status(200).json({ success: true });
+      res.status(204).send();
     } catch (error) {
       next(error);
     }

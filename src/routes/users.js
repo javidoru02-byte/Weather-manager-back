@@ -5,23 +5,27 @@ const { validate } = require('../middlewares/validate');
 const {
   registerSchema,
   loginSchema,
+  updateUserSchema,
   changePasswordSchema,
 } = require('../validation/user');
 
-const router = new Router();
+const router = Router();
 
-router.post('/users', validate(registerSchema), userController.register);
-router.post('/users/login', validate(loginSchema), userController.login);
+
+router.post('/', validate(registerSchema), userController.register);
+router.post('/login', validate(loginSchema), userController.login);
+
+
+router.use(authenticate);
 
 router
-  .route('/users/me')
-  .get(authenticate, userController.getMe)
-  .patch(authenticate, userController.updateUser)
-  .delete(authenticate, userController.deleteUser);
+  .route('/me')
+  .get(userController.getMe)
+  .patch(validate(updateUserSchema), userController.updateUser)
+  .delete(userController.deleteUser);
 
 router.patch(
-  '/users/me/password',
-  authenticate,
+  '/me/password',
   validate(changePasswordSchema),
   userController.changePassword,
 );

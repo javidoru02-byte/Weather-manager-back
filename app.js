@@ -5,12 +5,12 @@ const { notFoundHandler, errorHandler } = require('./src/middlewares/errorHandle
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000' }));
 app.use(express.json());
 
 app.use(router);
 
-app.use(notFoundHandler); 
-app.use(errorHandler);    
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 module.exports = app;

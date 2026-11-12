@@ -2,17 +2,26 @@ const { Router } = require('express');
 const favouritesController = require('../controllers/favourites');
 const authenticate = require('../middlewares/authenticate');
 const { validate } = require('../middlewares/validate');
-const { addFavouriteSchema } = require('../validation/favourite');
+const {
+  addFavouriteSchema,
+  updateFavouriteSchema,
+  cityIdParamsSchema,
+} = require('../validation/favourite');
 
-const router = new Router();
+const router = Router();
 
 router.use(authenticate);
 
 router
-  .route('/favourites')
+  .route('/')
   .get(favouritesController.getFavourites)
   .post(validate(addFavouriteSchema), favouritesController.addFavourite);
 
-router.delete('/favourites/:cityId', favouritesController.deleteFavourite);
+router
+  .route('/:cityId')
+  .all(validate(cityIdParamsSchema, 'params'))
+  .get(favouritesController.getFavourite)
+  .patch(validate(updateFavouriteSchema), favouritesController.updateFavourite)
+  .delete(favouritesController.deleteFavourite);
 
 module.exports = router;

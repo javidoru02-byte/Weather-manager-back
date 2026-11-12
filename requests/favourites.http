@@ -1,0 +1,38 @@
+@baseUrl = http://localhost:5000
+@token = PASTE_TOKEN_HERE
+
+### Список обраних
+GET {{baseUrl}}/favourites
+Authorization: Bearer {{token}}
+
+### Додати місто
+POST {{baseUrl}}/favourites
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "cityId": 703448,
+  "name": "Kyiv",
+  "lat": 50.45,
+  "lon": 30.52
+}
+
+### Одне обране місто
+GET {{baseUrl}}/favourites/703448
+Authorization: Bearer {{token}}
+
+### Перейменувати
+PATCH {{baseUrl}}/favourites/703448
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Київ (дім)"
+}
+
+### Видалити (204 No Content)
+DELETE {{baseUrl}}/favourites/703448
+Authorization: Bearer {{token}}
+
+### Без токена (очікуємо 401)
+GET {{baseUrl}}/favourites

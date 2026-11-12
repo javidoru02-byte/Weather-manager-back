@@ -1,36 +1,50 @@
-const UNIQUE_VIOLATIONS = {
-  users_email_key: 'User with this email already exists',
-  favourites_user_id_city_name_key: 'This city is already in favourites',
-};
-
 function notFoundHandler(req, res, next) {
   const error = new Error('Route not found');
   error.status = 404;
   next(error);
 }
 
-function errorHandler(err, req, res, next) {
-  console.error(err);
+// Повідомлення для порушень унікальності — залежать від constraint, а не від таблиці 
+const UNIQUE_VIOLATION_MESSAGES = {
+  users_email_key: 'emailAlreadyExists',
+  favourite_weather_pkey: 'cityAlreadyInFavourites',
+};
 
+// eslint-disable-next-line no-unused-vars
+function errorHandler(err, req, res, next) {
   if (err.name === 'ValidationError') {
     return res.status(400).json({
-      message: 'Validation error',
+      message: 'validationError',
       errors: err.errors,
     });
   }
 
+  
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ message: 'invalidJson' });
+  }
+
+  
   if (err.code === '23505') {
-    const message =
-      UNIQUE_VIOLATIONS[err.constraint] || 'Record already exists';
-    return res.status(409).json({ message });
+    return res.status(409).json({
+      message: UNIQUE_VIOLATION_MESSAGES[err.constraint] || 'alreadyExists',
+    });
   }
 
   if (err.code === '23503') {
-    return res.status(400).json({ message: 'Referenced user does not exist' });
+    return res.status(404).json({ message: 'userNotFound' });
   }
 
-  const status = err.status || 500;
-  res.status(status).json({ message: err.message || 'Internal Server Error' });
+  if (err.code === '22P02' || err.code === '22003') {
+    return res.status(400).json({ message: 'invalidParameter' });
+  }
+
+  if (!err.status) {
+    console.error(err);
+    return res.status(500).json({ message: 'serverError' });
+  }
+
+  res.status(err.status).json({ message: err.message });
 }
 
 module.exports = { notFoundHandler, errorHandler };

@@ -1,0 +1,10 @@
+@baseUrl = http://localhost:5000
+
+### Погода + 5-денний прогноз за назвою міста
+GET {{baseUrl}}/weather?city=Kyiv&lang=ua
+
+### Погода за координатами
+GET {{baseUrl}}/weather?lat=49.55&lon=25.59
+
+### Підказки міст для автокомпліту
+GET {{baseUrl}}/weather/cities?q=Ter&limit=5&lang=ua

@@ -1,24 +1,21 @@
-const jwt = require('jsonwebtoken');
+const { verifyToken } = require('../utils/jwt');
+const httpError = require('../utils/httpError');
 
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    const error = new Error('Authorization token is missing');
-    error.status = 401;
-    return next(error);
+    return next(httpError(401, 'tokenMissing'));
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.slice('Bearer '.length).trim();
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = { id: payload.id }; 
+    const payload = verifyToken(token);
+    req.user = { id: payload.id };
     next();
-  } catch (error) {
-    error.status = 401;
-    error.message = 'Invalid or expired token';
-    next(error);
+  } catch {
+    next(httpError(401, 'invalidToken'));
   }
 }
 
